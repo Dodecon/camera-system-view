@@ -1,0 +1,3 @@
+[2026-06-24 12:29:42.241] [logger] [info] application started
+[2026-06-24 14:32:36.948] [logger] [info] application started
+[2026-06-24 14:51:47.414] [logger] [info] application started
