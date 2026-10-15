@@ -1,29 +1,27 @@
 #ifndef CAMERAVIEW_H
 #define CAMERAVIEW_H
 
-#include <QVideoWidget>
-#include <QLabel>
 #include <QObject>
+#include <QWidget>
+#include <QImage>
 
-class cameraView : public QObject
+class cameraView : public QWidget
 {
     Q_OBJECT
 private:
-    QVideoWidget* cameraOutputWidget;
-    QLabel* fallbackWidget;
+    QImage imgData;
+
+    void paintEvent(QPaintEvent* event) override;
 
 public:
-    explicit cameraView(QVideoWidget* camW, QLabel* fallB);
+
+    explicit cameraView(QWidget* p = nullptr);
     ~cameraView();
 
-    QVideoWidget* getCameraOutputWidget() const;
-    void setCameraOutputWidget(QVideoWidget *newCameraOutputWidget);
 
-    QLabel* getFallbackWidget() const   ;
-    void setFallbackWidget(QLabel* newFallbackWidget);
-
-private slots:
-    void onVideoFeedRecieved(bool isRecieved);
+    void clear();
+public slots:
+    void receiveFrame(const QImage& frame);
 };
 
 #endif // CAMERAVIEW_H

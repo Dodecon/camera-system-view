@@ -1,90 +1,83 @@
 #include "camcontainer.h"
 
-
-camContainer::camContainer(QObject *parent) : QObject(parent){
-
+camContainer::camContainer(QObject *parent)
+    : QObject(parent)
+{
 }
 
-camContainer::~camContainer(){
-
+camContainer::~camContainer()
+{
 }
 
-
-
-
-void camContainer::addCamera(QUrl url, QGridLayout* layout){
-    securityCamera* newCam = new securityCamera(url, this);
-    CameraList.append(newCam);
-}
-
-
-void camContainer::schedule(securityCamera* cam){
-    if(cam == nullptr || camsToPlay.contains(cam)){return;}
-
-
-    camsToPlay.emplaceBack(cam);
-
-    if(camsToPlay.size() == 1){
-        startNextCam();
-    }
-}
-
-
-
-void camContainer::startNextCam(){
-    if(camsToPlay.isEmpty()){
-        return;
-    }
-
-    securityCamera* cam = camsToPlay.front();
-
-    connect(cam, &securityCamera::connectionAttempted,
-            this, &camContainer::onCameraReady);
-
-    cam->play();
-}
-
-
-void camContainer::onCameraReady(){
-
-    securityCamera* cam = camsToPlay.dequeue();
-    disconnect(cam, &securityCamera::connectionAttempted, this, &camContainer::onCameraReady);
-
-    if(!camsToPlay.isEmpty()){
-        startNextCam();
-    }
-}
-
-
-
-
-
-securityCamera* camContainer::at(int index){
-    if(index >= 0 && index < CameraList.size()){
-        return CameraList.at(index);
-    }
+securityCamera* camContainer::at(int index) const
+{
     return nullptr;
 }
 
+void camContainer::addCamera(QUrl url)
+{
+    Q_UNUSED(url);
+}
 
+void camContainer::append(securityCamera* cam)
+{
+    Q_UNUSED(cam);
+}
 
-void camContainer::append(securityCamera* cam){
-    CameraList.append(cam);
+void camContainer::remove(int index)
+{
+    Q_UNUSED(index);
+}
+
+void camContainer::remove()
+{
+}
+
+int camContainer::size() const
+{
+    return 0;
 }
 
 
-void camContainer::remove(int index){
-    if(index >= 0 && index < CameraList.size() && !CameraList.isEmpty()){
-        delete CameraList.takeAt(index);
-    }
+
+
+
+
+activeCameraGrid::activeCameraGrid(QObject* p, int VCount)
+    : QObject(p),
+    viewCount(VCount)
+{
+    init();
 }
-void camContainer::remove(){
-    if(!CameraList.isEmpty()){
-        delete CameraList.takeAt(CameraList.size()-1);
-    }
+
+activeCameraGrid::~activeCameraGrid()
+{
+}
+
+void activeCameraGrid::init()
+{
 
 }
 
-int camContainer::size(){
-    return CameraList.size();
+void activeCameraGrid::setActive(securityCamera* cam, int ActiveSlot)
+{
+    Q_UNUSED(cam);
+    Q_UNUSED(ActiveSlot);
+}
+
+securityCamera* activeCameraGrid::CameraAt(int index) const
+{
+    Q_UNUSED(index);
+    return nullptr;
+}
+
+cameraView* activeCameraGrid::viewAt(int slot) const
+{
+    Q_UNUSED(slot);
+    return nullptr;
+}
+
+void activeCameraGrid::deActivate(int ActiveSlot)
+{
+    Q_UNUSED(ActiveSlot);
 }

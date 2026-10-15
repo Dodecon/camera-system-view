@@ -1,43 +1,33 @@
 #include "cameraview.h"
+#include "QPainter"
+#include "QRect"
 
-
-cameraView::cameraView(QVideoWidget* camW, QLabel* fallB) : cameraOutputWidget(camW), fallbackWidget(fallB) {
-}
+cameraView::cameraView(QWidget* p) : QWidget(p) {}
 
 cameraView::~cameraView(){
-
 }
 
 
-QVideoWidget* cameraView::getCameraOutputWidget() const {
-    return cameraOutputWidget;
+void cameraView::paintEvent(QPaintEvent* event){
+    QPainter painter(this);
+
+    painter.fillRect(rect(), Qt::black);
+
+    if(imgData.isNull()) return;
+
+    auto scaled = imgData.size().scaled(size(), Qt::KeepAspectRatio);
+    QRect target(QPoint(0,0), scaled);
+    target.moveCenter(rect().center());
+
+    painter.drawImage(target, imgData);
 }
 
-void cameraView::setCameraOutputWidget(QVideoWidget *newCameraOutputWidget){
-    cameraOutputWidget = newCameraOutputWidget;
+void cameraView::receiveFrame(const QImage& frame){
+    imgData = frame;
+    update();
 }
 
-
-
-
-QLabel* cameraView::getFallbackWidget() const {
-    return fallbackWidget;
-}
-
-void cameraView::setFallbackWidget(QLabel *newFallbackWidget){
-    fallbackWidget = newFallbackWidget;
-}
-
-
-
-void cameraView::onVideoFeedRecieved(bool isRecieved){
-    if(cameraOutputWidget == nullptr){return;}
-
-
-    if(!isRecieved){
-        cameraOutputWidget->hide();
-    }
-    else{
-        cameraOutputWidget->show();
-    }
+void cameraView::clear() {
+    imgData = QImage();
+    update();
 }

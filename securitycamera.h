@@ -1,58 +1,65 @@
+#include "Basesecutirycamera.h"
+#include <QThread>
+#include <atomic>
+
+extern "C"{
+struct AVFormatContext;
+
+struct AVDictionary;
+
+struct AVCodecContext;
+struct AVCodecParameters;
+struct AVCodec;
+
+struct SwsContext;
+
+struct AVPacket;
+struct AVFrame;
+}
+
+
 #ifndef SECURITYCAMERA_H
 #define SECURITYCAMERA_H
 
-#include <QVideoWidget>
-#include <QObject>
-#include <QUrl>
-#include <QMediaPlayer>
-#include <QAudioOutput>
-#include <QTimer>
-#include <QVideoSink>
 
-
-class securityCamera : public QObject
+class securityCamera : public baseSecurityCamera
 {
     Q_OBJECT
 
-
-private:
-
-    QMediaPlayer* player;
-    QVideoWidget* videoWidget;
-
-    QUrl URL;
-
-public slots:
-    void pause();
-    void play();
-    void idle();
-
-private slots:
-    void onPlayerError(QMediaPlayer::Error error, const QString &errorString);
-
-    void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
-
-signals:
-    void connectionAttempted();
-    void feedRecieved(bool recieved);
-
-    void errorOccurred(const QString& errorString);
-
-
 public:
-
-    explicit securityCamera(const QUrl &u, QObject* p = nullptr);
+    explicit securityCamera(QObject* p, const QUrl& URL);
     ~securityCamera();
 
-    QUrl getUrl() const;
-    void setUrl(const QUrl& url);
-
-    QMediaPlayer::PlaybackState getState();
+    void setUrl(const QUrl& u) override;
 
 
-    QVideoWidget* getVideoWidget();
+public slots:
+    void play() override;
+    void stop() override;
 
-    void setVideoOutput(QVideoWidget* widget);
+private:
+    QThread* m_thread = nullptr;
+
+    std::atomic<bool> stopRequested{false};
+    int videoStreamID = -1;
+
+    AVDictionary* opts = nullptr;
+
+    AVFormatContext* format_ctx = nullptr;
+
+    AVCodecContext* codec_ctx = nullptr;
+    const AVCodec* codec = nullptr;
+
+    SwsContext* sws = nullptr;
+
+
+    static int interruptCallback(void* opaque); // gets called by Ffmpeg periodically when reading the input
+
+    void clearData();
+
+    void Connect();
+    void Decode();
+
 };
 
 #endif // SECURITYCAMERA_H

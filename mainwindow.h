@@ -4,7 +4,6 @@
 #include <QMainWindow>
 #include <QShowEvent>
 #include <QTimer>
-#include <QMediaPlayer>
 #include <QVideoWidget>
 #include <QUrl>
 #include <QPushButton>
@@ -12,10 +11,13 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QPixmap>
-
+#include "cameraview.h"
 #include "securitycamera.h"
-#include "camcontainer.h"
-#include "logListner.h"
+
+// class camContainer;                  // only if you need the pointer type
+// #include "securitycamera.h"
+// #include "camcontainer.h"
+// #include "logListner.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -35,25 +37,24 @@ protected:
 private:
     inline static const QString fallbackUrl = ":/resources/no-connection.jpeg";
 
-    camContainer* cams;
+    // camContainer* cams = nullptr;      // commented until you re-add it
 
     QGridLayout* camGrid;
     QGridLayout* fallbackGrid;
 
-    QVideoWidget* video1;
-    QVideoWidget* video2;
-    QVideoWidget* video3;
-    QVideoWidget* video4;
+    securityCamera* cam1;
+    securityCamera* cam2;
+    securityCamera* cam3;
+    securityCamera* cam4;
 
-    QLabel* fallback1;
-    QLabel* fallback2;
-    QLabel* fallback3;
-    QLabel* fallback4;
+    cameraView* video1;
+    cameraView* video2;
+    cameraView* video3;
+    cameraView* video4;
 
-    QVideoWidget* bigVideo;
+    cameraView* bigVideo;
 
-
-    securityCamera* bigCamera = nullptr;
+    // securityCamera* bigCamera = nullptr;
     QVideoWidget* savedSmallWidget = nullptr;
 
     QPushButton* btnMenu;
@@ -64,14 +65,11 @@ private:
     QPushButton* btn4;
     QPushButton* btn5;
 
-
     QVideoWidget* getSmallWidgetAt(int row, int col);
 
-
 private slots:
-    void onViewCameraPressed(QPair<int,int> coords);
+    // void onViewCameraPressed(QPair<int,int> coords);   // ← causes the moc link error
     void onViewExit();
-
     void onMenuButtonPressed();
 };
 #endif // MAINWINDOW_H
