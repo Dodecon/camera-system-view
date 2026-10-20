@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "securitycamera.h"
+#include "camcontainer.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -18,10 +19,9 @@ MainWindow::MainWindow(QWidget *parent)
     mainLayout->setSpacing(0);
     mainLayout->setContentsMargins(0, 0, 0, 0);
 
-    camGrid = new QGridLayout();
-    camGrid->setSpacing(4);
+    // camGrid = new QGridLayout();
+    // camGrid->setSpacing(4);
 
-    fallbackGrid = new QGridLayout();
 
     cam1 = new securityCamera(this, QUrl("C:/Users/Irbis/Downloads/shaman-ya-russkiy_580621.mp4"));
     cam2 = new securityCamera(this, QUrl("C:/Users/Irbis/Downloads/shaman-ya-russkiy_580621.mp4"));
@@ -29,37 +29,46 @@ MainWindow::MainWindow(QWidget *parent)
     cam4 = new securityCamera(this, QUrl("C:/Users/Irbis/Downloads/shaman-ya-russkiy_580621.mp4"));
 
 
-    video1 = new cameraView(this);
-    QSizePolicy sp1 = video1->sizePolicy();
-    sp1.setRetainSizeWhenHidden(true);
-    video1->setSizePolicy(sp1);
+    // video1 = new cameraView(this);
+    // QSizePolicy sp1 = video1->sizePolicy();
+    // sp1.setRetainSizeWhenHidden(true);
+    // video1->setSizePolicy(sp1);
 
-    video2 = new cameraView(this);
-    QSizePolicy sp2 = video2->sizePolicy();
-    sp2.setRetainSizeWhenHidden(true);
-    video2->setSizePolicy(sp2);
+    // video2 = new cameraView(this);
+    // QSizePolicy sp2 = video2->sizePolicy();
+    // sp2.setRetainSizeWhenHidden(true);
+    // video2->setSizePolicy(sp2);
 
-    video3 = new cameraView(this);
-    QSizePolicy sp3 = video3->sizePolicy();
-    sp3.setRetainSizeWhenHidden(true);
-    video3->setSizePolicy(sp3);
+    // video3 = new cameraView(this);
+    // QSizePolicy sp3 = video3->sizePolicy();
+    // sp3.setRetainSizeWhenHidden(true);
+    // video3->setSizePolicy(sp3);
 
-    video4 = new cameraView(this);
-    QSizePolicy sp4 = video4->sizePolicy();
-    sp4.setRetainSizeWhenHidden(true);
-    video4->setSizePolicy(sp4);
+    // video4 = new cameraView(this);
+    // QSizePolicy sp4 = video4->sizePolicy();
+    // sp4.setRetainSizeWhenHidden(true);
+    // video4->setSizePolicy(sp4);
 
-    camGrid->addWidget(video1, 0, 0);
-    camGrid->addWidget(video2, 0, 1);
-    camGrid->addWidget(video3, 1, 0);
-    camGrid->addWidget(video4, 1, 1);
+    // camGrid->addWidget(video1, 0, 0);
+    // camGrid->addWidget(video2, 0, 1);
+    // camGrid->addWidget(video3, 1, 0);
+    // camGrid->addWidget(video4, 1, 1);
+
+    mainOutputLayout = new QGridLayout(this);
+    mainOutputLayout->setSpacing(4);
+
+    mainCamGrid = new activeCameraGrid(this, 2, 2, mainOutputLayout);
+    mainCamGrid->setActive(cam1, 0, 0);
+    mainCamGrid->setActive(cam2, 1, 0);
+    mainCamGrid->setActive(cam3, 0, 1);
+    mainCamGrid->setActive(cam4, 1, 1);
+
 
     QGridLayout* overlayLayout = new QGridLayout();
     overlayLayout->setContentsMargins(0, 0, 0, 0);
     overlayLayout->setSpacing(0);
 
-    overlayLayout->addLayout(camGrid, 0, 0);
-    overlayLayout->addLayout(fallbackGrid, 0, 0);   // now safe, empty for now
+    overlayLayout->addLayout(mainCamGrid->getViewGrid(), 0, 0);
 
     bigVideo = new cameraView(this);
     overlayLayout->addWidget(bigVideo, 0, 0);
@@ -132,15 +141,10 @@ QVideoWidget* MainWindow::getSmallWidgetAt(int row, int col)
 void MainWindow::showEvent(QShowEvent *event)
 {
     QMainWindow::showEvent(event);
-    // leave empty for now — re-add connects when you wire cameras back in
 
-    connect(cam1, &securityCamera::decodedFrame, video1, &cameraView::receiveFrame);
     cam1->play();
-    connect(cam2, &securityCamera::decodedFrame, video2, &cameraView::receiveFrame);
     cam2->play();
-    connect(cam3, &securityCamera::decodedFrame, video3, &cameraView::receiveFrame);
     cam3->play();
-    connect(cam4, &securityCamera::decodedFrame, video4, &cameraView::receiveFrame);
     cam4->play();
 
 }

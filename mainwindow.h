@@ -11,8 +11,9 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QPixmap>
-#include "cameraview.h"
+#include <QPointer>
 #include "securitycamera.h"
+#include "camcontainer.h"
 
 // class camContainer;                  // only if you need the pointer type
 // #include "securitycamera.h"
@@ -47,10 +48,13 @@ private:
     securityCamera* cam3;
     securityCamera* cam4;
 
-    cameraView* video1;
-    cameraView* video2;
-    cameraView* video3;
-    cameraView* video4;
+    activeCameraGrid* mainCamGrid;
+    QPointer<QGridLayout> mainOutputLayout;
+
+    // cameraView* video1;
+    // cameraView* video2;
+    // cameraView* video3;
+    // cameraView* video4;
 
     cameraView* bigVideo;
 
