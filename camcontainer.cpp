@@ -12,7 +12,7 @@ camContainer::~camContainer()
 
 securityCamera* camContainer::at(int index) const
 {
-    if(index >= 0 && index >= size()) {return nullptr;}
+    if(index < 0 || index >= size()) {return nullptr;}
 
     return CameraList.at(index);
 }
@@ -25,14 +25,16 @@ void camContainer::addCamera(QUrl url)
 
 void camContainer::append(securityCamera* cam)
 {
+    if(cam == nullptr) return;
     cam->setParent(this);
     CameraList.append(cam);
-    cam->deleteLater();
 }
 
 void camContainer::remove(int index)
 {
-    CameraList.removeAt(index);
+    if(index < 0 || index >= size()) return;
+    securityCamera* cam = CameraList.takeAt(index);
+    cam->deleteLater(); // ADDED it here instead!
 }
 
 

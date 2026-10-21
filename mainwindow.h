@@ -41,20 +41,11 @@ private:
     // camContainer* cams = nullptr;      // commented until you re-add it
 
     QGridLayout* camGrid;
-    QGridLayout* fallbackGrid;
 
-    securityCamera* cam1;
-    securityCamera* cam2;
-    securityCamera* cam3;
-    securityCamera* cam4;
+    camContainer* cameras;
 
     activeCameraGrid* mainCamGrid;
     QPointer<QGridLayout> mainOutputLayout;
-
-    // cameraView* video1;
-    // cameraView* video2;
-    // cameraView* video3;
-    // cameraView* video4;
 
     cameraView* bigVideo;
 

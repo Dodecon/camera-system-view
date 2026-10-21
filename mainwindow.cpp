@@ -23,10 +23,12 @@ MainWindow::MainWindow(QWidget *parent)
     // camGrid->setSpacing(4);
 
 
-    cam1 = new securityCamera(this, QUrl("C:/Users/Irbis/Downloads/shaman-ya-russkiy_580621.mp4"));
-    cam2 = new securityCamera(this, QUrl("C:/Users/Irbis/Downloads/shaman-ya-russkiy_580621.mp4"));
-    cam3 = new securityCamera(this, QUrl("C:/Users/Irbis/Downloads/shaman-ya-russkiy_580621.mp4"));
-    cam4 = new securityCamera(this, QUrl("C:/Users/Irbis/Downloads/shaman-ya-russkiy_580621.mp4"));
+    cameras = new camContainer(this);
+
+    cameras->addCamera(QUrl("C:/Users/Irbis/Downloads/shaman-ya-russkiy_580621.mp4"));
+    cameras->addCamera(QUrl("https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"));
+    cameras->addCamera(QUrl("http://devimages.apple.com/iphone/samples/bipbop/gear1/prog_index.m3u8"));
+    cameras->addCamera(QUrl("rtsp://admin:123456@enster.oicp.net/stream0"));
 
 
     // video1 = new cameraView(this);
@@ -58,10 +60,10 @@ MainWindow::MainWindow(QWidget *parent)
     mainOutputLayout->setSpacing(4);
 
     mainCamGrid = new activeCameraGrid(this, 2, 2, mainOutputLayout);
-    mainCamGrid->setActive(cam1, 0, 0);
-    mainCamGrid->setActive(cam2, 1, 0);
-    mainCamGrid->setActive(cam3, 0, 1);
-    mainCamGrid->setActive(cam4, 1, 1);
+    mainCamGrid->setActive(cameras->at(0), 0, 0);
+    mainCamGrid->setActive(cameras->at(1), 1, 0);
+    mainCamGrid->setActive(cameras->at(2), 0, 1);
+    mainCamGrid->setActive(cameras->at(3), 1, 1);
 
 
     QGridLayout* overlayLayout = new QGridLayout();
@@ -142,11 +144,10 @@ void MainWindow::showEvent(QShowEvent *event)
 {
     QMainWindow::showEvent(event);
 
-    cam1->play();
-    cam2->play();
-    cam3->play();
-    cam4->play();
-
+    mainCamGrid->activeCameraAt(0,0)->play();
+    mainCamGrid->activeCameraAt(1,0)->play();
+    mainCamGrid->activeCameraAt(0,1)->play();
+    mainCamGrid->activeCameraAt(1,1)->play();
 }
 
 void MainWindow::onViewExit()

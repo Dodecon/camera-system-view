@@ -45,6 +45,9 @@ void securityCamera::Connect(){
     av_dict_set(&opts, "rtsp_transport", "tcp", 0);
     av_dict_set(&opts, "timeout", "5000000", 0);
     av_dict_set(&opts, "max_delay", "100000", 0);
+    av_dict_set(&opts, "buffer_size", "10097152", 0); // 10MB buffer
+    av_dict_set(&opts, "max_delay", "500000", 0);    // Allow up to 500ms network jitter
+    av_dict_set(&opts, "reorder_queue_size", "0", 0); // Helps with HLS chunk ordering
 
     format_ctx = avformat_alloc_context();
 
@@ -147,22 +150,33 @@ void securityCamera::Decode(){
                 // rgb_frame now contains the usable RGB data.
 
 
+
                 AVRational timeBase = format_ctx->streams[videoStreamID]->time_base;
                 int64_t presentationTimestamp = raw_frame->best_effort_timestamp;
 
-                if(firstPTS == AV_NOPTS_VALUE && presentationTimestamp != AV_NOPTS_VALUE){
-                    firstPTS = presentationTimestamp;
-                    firstPtsArrived = clock::now();
+                if (presentationTimestamp != AV_NOPTS_VALUE) {
+                    if (firstPTS == AV_NOPTS_VALUE) {
+                        firstPTS = presentationTimestamp;
+                        firstPtsArrived = clock::now();
+                    }
+
+                    // Calculate when this frame SHOULD be shown
+                    double frameOffsetSeconds = (presentationTimestamp - firstPTS) * av_q2d(timeBase);
+                    auto targetDuration = std::chrono::duration_cast<clock::duration>(std::chrono::duration<double>(frameOffsetSeconds));
+                    auto targetTime = firstPtsArrived + targetDuration;
+                    auto now = clock::now();
+
+                    // Normal pacing: if we are early, wait.
+                    if (now < targetTime) {
+                        std::this_thread::sleep_until(targetTime);
+                    }
+                    //  Catch-up logic: if we are >100ms late, we stalled. Reset the clock.
+                    else if ((now - targetTime) > std::chrono::milliseconds(100)) {
+                        // We are falling behind. Reset the baseline so we don't fast-forward.
+                        firstPtsArrived = now;
+                        firstPTS = presentationTimestamp;
+                    }
                 }
-
-                if(presentationTimestamp != AV_NOPTS_VALUE){
-
-                    double frameOffsetSeconds = (presentationTimestamp - firstPTS) * av_q2d(timeBase); // how much time from the start of the video must pass until this frame is shown
-                    std::chrono::duration<double> frameDurationOffset(frameOffsetSeconds);
-
-                    std::this_thread::sleep_until(firstPtsArrived + frameDurationOffset);
-                }
-
 
                 emit decodedFrame(img);
             }
