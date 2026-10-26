@@ -1,14 +1,14 @@
-#include "cameraview.h"
+#include "view.h"
 #include "QPainter"
 #include "QRect"
 
-cameraView::cameraView(QWidget* p) : QWidget(p) {}
+View::View(QWidget* p) : QWidget(p) {}
 
-cameraView::~cameraView(){
+View::~View(){
 }
 
 
-void cameraView::paintEvent(QPaintEvent* event){
+void View::paintEvent(QPaintEvent* event){
     QPainter painter(this);
 
     painter.fillRect(rect(), Qt::black);
@@ -22,12 +22,12 @@ void cameraView::paintEvent(QPaintEvent* event){
     painter.drawImage(target, imgData);
 }
 
-void cameraView::receiveFrame(const QImage& frame){
+void View::receiveFrame(const QImage& frame){
     imgData = frame;
     update();
 }
 
-void cameraView::clear() {
+void View::clear() {
     imgData = QImage();
     update();
 }

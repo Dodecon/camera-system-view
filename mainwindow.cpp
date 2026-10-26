@@ -8,7 +8,7 @@
 #include <QSpacerItem>
 #include <QGridLayout>
 #include <QPushButton>
-#include "cameraview.h"
+#include "activecameragrid.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -19,42 +19,15 @@ MainWindow::MainWindow(QWidget *parent)
     mainLayout->setSpacing(0);
     mainLayout->setContentsMargins(0, 0, 0, 0);
 
-    // camGrid = new QGridLayout();
-    // camGrid->setSpacing(4);
 
 
     cameras = new camContainer(this);
 
-    cameras->addCamera(QUrl("C:/Users/Irbis/Downloads/shaman-ya-russkiy_580621.mp4"));
-    cameras->addCamera(QUrl("https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"));
-    cameras->addCamera(QUrl("http://devimages.apple.com/iphone/samples/bipbop/gear1/prog_index.m3u8"));
-    cameras->addCamera(QUrl("rtsp://admin:123456@enster.oicp.net/stream0"));
+    cameras->addCamera<securityCamera>(QUrl("C:/Users/Irbis/Downloads/shaman-ya-russkiy_580621.mp4"));
+    cameras->addCamera<securityCamera>(QUrl("https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"));
+    cameras->addCamera<securityCamera>(QUrl("http://devimages.apple.com/iphone/samples/bipbop/gear1/prog_index.m3u8"));
+    cameras->addCamera<securityCamera>(QUrl("rtsp://admin:123456@enster.oicp.net/stream0"));
 
-
-    // video1 = new cameraView(this);
-    // QSizePolicy sp1 = video1->sizePolicy();
-    // sp1.setRetainSizeWhenHidden(true);
-    // video1->setSizePolicy(sp1);
-
-    // video2 = new cameraView(this);
-    // QSizePolicy sp2 = video2->sizePolicy();
-    // sp2.setRetainSizeWhenHidden(true);
-    // video2->setSizePolicy(sp2);
-
-    // video3 = new cameraView(this);
-    // QSizePolicy sp3 = video3->sizePolicy();
-    // sp3.setRetainSizeWhenHidden(true);
-    // video3->setSizePolicy(sp3);
-
-    // video4 = new cameraView(this);
-    // QSizePolicy sp4 = video4->sizePolicy();
-    // sp4.setRetainSizeWhenHidden(true);
-    // video4->setSizePolicy(sp4);
-
-    // camGrid->addWidget(video1, 0, 0);
-    // camGrid->addWidget(video2, 0, 1);
-    // camGrid->addWidget(video3, 1, 0);
-    // camGrid->addWidget(video4, 1, 1);
 
     mainOutputLayout = new QGridLayout(this);
     mainOutputLayout->setSpacing(4);
@@ -72,15 +45,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     overlayLayout->addLayout(mainCamGrid->getViewGrid(), 0, 0);
 
-    bigVideo = new cameraView(this);
-    overlayLayout->addWidget(bigVideo, 0, 0);
-    bigVideo->hide();
+    bigVideoView = new activeCameraGrid(this, 1, 1);
+    overlayLayout->addLayout(bigVideoView->getViewGrid(), 0, 0);
+    bigVideoView->viewAt(0,0)->hide();
 
     mainLayout->addLayout(overlayLayout, 6);
 
     QHBoxLayout* buttonLayout = new QHBoxLayout();
     buttonLayout->setContentsMargins(10, 10, 10, 10);
-    buttonLayout->setSpacing(10);
+    buttonLayout->setSpacing(4);
 
     QSizePolicy expandPolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
@@ -127,6 +100,17 @@ MainWindow::MainWindow(QWidget *parent)
 
     mainLayout->addLayout(buttonLayout, 1);
 
+    connect(btn1, &QPushButton::clicked, this, [this]() {onShowFullScreenButtonPressed(QPair<int, int>(0, 0));} );
+    connect(btn2, &QPushButton::clicked, this, [this]() {onShowFullScreenButtonPressed(QPair<int, int>(1, 0));} );
+    connect(btn3, &QPushButton::clicked, this, [this]() {onShowFullScreenButtonPressed(QPair<int, int>(0, 1));} );
+    connect(btn4, &QPushButton::clicked, this, [this]() {onShowFullScreenButtonPressed(QPair<int, int>(1, 1));} );
+    connect(btn5, &QPushButton::clicked, this, &MainWindow::onCloseFullScreenButtonPressed);
+
+
+    CamSettingsMenu = new cameraMenu(cameras, this); // a menu to edit a cameras settings
+
+    connect(btnMenu, &QPushButton::clicked, CamSettingsMenu, &QDialog::show);
+
     setCentralWidget(centralWidget);
     this->showFullScreen();
 }
@@ -135,10 +119,6 @@ MainWindow::~MainWindow()
 {
 }
 
-QVideoWidget* MainWindow::getSmallWidgetAt(int row, int col)
-{
-    return nullptr;   // stub for now
-}
 
 void MainWindow::showEvent(QShowEvent *event)
 {
@@ -150,14 +130,16 @@ void MainWindow::showEvent(QShowEvent *event)
     mainCamGrid->activeCameraAt(1,1)->play();
 }
 
-void MainWindow::onViewExit()
-{
-    bigVideo->hide();
-    savedSmallWidget = nullptr;
+
+
+void MainWindow::onShowFullScreenButtonPressed(QPair<int, int> showAtPos){
+    bigVideoView->setActive(mainCamGrid->activeCameraAt(showAtPos.first, showAtPos.second), 0, 0);
+
+    bigVideoView->viewAt(0,0)->show();
 }
 
-void MainWindow::onMenuButtonPressed()
-{
-    // cameraMenu menu(nullptr, this);
-    // menu.exec();
+void MainWindow::onCloseFullScreenButtonPressed(){
+    bigVideoView->deActivate(0,0);
+
+    bigVideoView->viewAt(0,0)->hide();
 }

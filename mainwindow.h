@@ -14,6 +14,7 @@
 #include <QPointer>
 #include "securitycamera.h"
 #include "camcontainer.h"
+#include "cameramenu.h"
 
 // class camContainer;                  // only if you need the pointer type
 // #include "securitycamera.h"
@@ -47,10 +48,9 @@ private:
     activeCameraGrid* mainCamGrid;
     QPointer<QGridLayout> mainOutputLayout;
 
-    cameraView* bigVideo;
+    activeCameraGrid* bigVideoView;
 
-    // securityCamera* bigCamera = nullptr;
-    QVideoWidget* savedSmallWidget = nullptr;
+    cameraMenu* CamSettingsMenu;
 
     QPushButton* btnMenu;
     QLabel* label;
@@ -60,11 +60,9 @@ private:
     QPushButton* btn4;
     QPushButton* btn5;
 
-    QVideoWidget* getSmallWidgetAt(int row, int col);
-
 private slots:
-    // void onViewCameraPressed(QPair<int,int> coords);   // ← causes the moc link error
-    void onViewExit();
-    void onMenuButtonPressed();
+
+    void onShowFullScreenButtonPressed(QPair<int, int> showAtPos);
+    void onCloseFullScreenButtonPressed();
 };
 #endif // MAINWINDOW_H

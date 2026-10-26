@@ -1,61 +1,4 @@
-#include "camcontainer.h"
-#include "cameraview.h"
-
-camContainer::camContainer(QObject *parent)
-    : QObject(parent)
-{
-}
-
-camContainer::~camContainer()
-{
-}
-
-securityCamera* camContainer::at(int index) const
-{
-    if(index < 0 || index >= size()) {return nullptr;}
-
-    return CameraList.at(index);
-}
-
-void camContainer::addCamera(QUrl url)
-{
-    securityCamera* cam = new securityCamera(this, url);
-    CameraList.append(cam);
-}
-
-void camContainer::append(securityCamera* cam)
-{
-    if(cam == nullptr) return;
-    cam->setParent(this);
-    CameraList.append(cam);
-}
-
-void camContainer::remove(int index)
-{
-    if(index < 0 || index >= size()) return;
-    securityCamera* cam = CameraList.takeAt(index);
-    cam->deleteLater(); // ADDED it here instead!
-}
-
-
-int camContainer::size() const
-{
-    return CameraList.size();
-}
-
-void camContainer::requestActivation(int index, int x, int y)
-{
-    securityCamera* cam = at(index);
-    if (cam) {
-        emit activateRequested(cam, x, y);
-    }
-}
-
-
-
-
-
-
+#include "activecameragrid.h"
 
 
 activeCameraGrid::activeCameraGrid(QObject* p, int VCountX, int VCountY, QPointer<QGridLayout> outputGridLayout)
@@ -73,7 +16,7 @@ activeCameraGrid::activeCameraGrid(QObject* p, int VCountX, int VCountY, QPointe
     for(int y = 0; y < viewCountY; y++){
         for(int x = 0; x < viewCountX; x++){
 
-            cameraView* video = new cameraView();
+            View* video = new View();
             QSizePolicy sp1 = video->sizePolicy();
             sp1.setRetainSizeWhenHidden(true);
             video->setSizePolicy(sp1);
@@ -102,7 +45,7 @@ bool activeCameraGrid::withinBounds(int x, int y) const{    //prevent the user f
 }
 
 
-void activeCameraGrid::setActive(securityCamera* cam, int x, int y)
+void activeCameraGrid::setActive(baseSecurityCamera* cam, int x, int y)
 {
     if(withinBounds(x,y)){
 
@@ -122,14 +65,14 @@ void activeCameraGrid::setActive(securityCamera* cam, int x, int y)
         deActivate(x, y); //Clear the target slot (evict whatever camera is there).
 
 
-        cameraView* view = viewAt(x,y); //track the connection between a camera and view at (x,y)
+        View* view = viewAt(x,y); //track the connection between a camera and view at (x,y)
         if (!view) return;   // shouldn't happen after init, but defensively safe
         if (!cam) return;
 
         activeCams[gridCoord] = cam;
 
 
-        conns[gridCoord] = connect(cam, &securityCamera::decodedFrame, view, &cameraView::receiveFrame);
+        conns[gridCoord] = connect(cam, &baseSecurityCamera::decodedFrame, view, &View::receiveFrame);
 
         // a lambda that cleans up all the connections a camera had if this cameras destructor was called
         destroyedConns[cam] = connect(cam, &QObject::destroyed, this, [this, cam, gridCoord]{
@@ -150,7 +93,7 @@ void activeCameraGrid::setActive(securityCamera* cam, int x, int y)
 }
 
 
-securityCamera* activeCameraGrid::activeCameraAt(int x, int y) const
+baseSecurityCamera* activeCameraGrid::activeCameraAt(int x, int y) const
 {
     if(withinBounds(x,y)){
         return activeCams.value(QPair<int,int>(x,y)).data();
@@ -159,7 +102,7 @@ securityCamera* activeCameraGrid::activeCameraAt(int x, int y) const
 
 }
 
-cameraView* activeCameraGrid::viewAt(int x, int y) const
+View* activeCameraGrid::viewAt(int x, int y) const
 {
     if(withinBounds(x,y)){
 
@@ -167,7 +110,7 @@ cameraView* activeCameraGrid::viewAt(int x, int y) const
 
         if(viewGrid->itemAtPosition(y,x) != nullptr){
 
-            return qobject_cast<cameraView*>(viewGrid->itemAtPosition(y,x)->widget());  //qt uses row-first. code does column first
+            return qobject_cast<View*>(viewGrid->itemAtPosition(y,x)->widget());  //qt uses row-first. code does column first
         }
     }
 
@@ -205,7 +148,3 @@ void activeCameraGrid::deActivate(int x, int y)
     if (auto* v = viewAt(x, y))
         v->clear();
 }
-
-
-
-

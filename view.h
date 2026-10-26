@@ -1,11 +1,11 @@
-#ifndef CAMERAVIEW_H
-#define CAMERAVIEW_H
+#ifndef VIEW_H
+#define VIEW_H
 
 #include <QObject>
 #include <QWidget>
 #include <QImage>
 
-class cameraView : public QWidget
+class View : public QWidget
 {
     Q_OBJECT
 private:
@@ -15,8 +15,8 @@ private:
 
 public:
 
-    explicit cameraView(QWidget* p = nullptr);
-    ~cameraView();
+    explicit View(QWidget* p = nullptr);
+    ~View();
 
 
     void clear();
@@ -24,4 +24,4 @@ public slots:
     void receiveFrame(const QImage& frame);
 };
 
-#endif // CAMERAVIEW_H
+#endif // VIEW_H

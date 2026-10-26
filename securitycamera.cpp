@@ -43,11 +43,9 @@ void securityCamera::Connect(){
     setState(CamState::connecting);
 
     av_dict_set(&opts, "rtsp_transport", "tcp", 0);
-    av_dict_set(&opts, "timeout", "5000000", 0);
-    av_dict_set(&opts, "max_delay", "100000", 0);
-    av_dict_set(&opts, "buffer_size", "10097152", 0); // 10MB buffer
-    av_dict_set(&opts, "max_delay", "500000", 0);    // Allow up to 500ms network jitter
-    av_dict_set(&opts, "reorder_queue_size", "0", 0); // Helps with HLS chunk ordering
+    av_dict_set(&opts, "timeout", "10000000", 0);
+    av_dict_set(&opts, "buffer_size", "10000000", 0); // 10MB buffer
+    av_dict_set(&opts, "max_delay", "1500000", 0);    // Allow up to 1500ms network jitter
 
     format_ctx = avformat_alloc_context();
 
