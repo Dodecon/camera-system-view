@@ -30,7 +30,6 @@ void securityCamera::clearData(){
 
     if (m_thread && QThread::currentThread() != m_thread) {
         m_thread->wait();
-        m_thread = nullptr;
     }
     avformat_close_input(&format_ctx);
     avcodec_free_context(&codec_ctx);
@@ -219,7 +218,11 @@ void securityCamera::play(){
         setState(CamState::disconnected);
     });
 
-    connect(m_thread, &QThread::finished, m_thread, &QObject::deleteLater);
+    connect(m_thread, &QThread::finished, this, [this]() {
+        m_thread->deleteLater();
+        m_thread = nullptr;
+    });
+
     m_thread->start();
 }
 

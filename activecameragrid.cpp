@@ -35,6 +35,10 @@ activeCameraGrid::~activeCameraGrid()
     activeCams.clear();
 }
 
+int activeCameraGrid::size(){
+    return viewCountX * viewCountY;
+}
+
 
 bool activeCameraGrid::withinBounds(int x, int y) const{    //prevent the user from tying to access data outside the Qmaps range
 

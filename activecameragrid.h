@@ -17,6 +17,7 @@ private:
     int viewCountX;
     int viewCountY;
 
+
     QMap<QPair<int, int>, QPointer<baseSecurityCamera>> activeCams;
     QMap<QPair<int, int>, QMetaObject::Connection> conns;
     QMap<baseSecurityCamera*, QMetaObject::Connection> destroyedConns; //stores connections whose only purpose is to clean up everything
@@ -30,6 +31,8 @@ public slots:
 public:
     explicit activeCameraGrid(QObject* p, int VCountX = 0, int VCountY = 0, QPointer<QGridLayout> outputGridLayout = nullptr);
     ~activeCameraGrid();
+
+    int size();
 
     baseSecurityCamera* activeCameraAt(int x, int y) const;
     View* viewAt(int x, int y) const;

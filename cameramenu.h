@@ -22,12 +22,15 @@ private:
     camContainer* cams;
     int selectedIndex = -1;
 
+    QLineEdit* CurrentLink;
     QLineEdit *Port;
     QLineEdit *Login;
     QLineEdit *Password;
     QLineEdit *Ip;
     QLineEdit *Stream;
     QLineEdit* CustomLink;
+
+    void clearInputFields();
 
     void saveURL(int index);
     void getURLforUI(int index);

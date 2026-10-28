@@ -3,6 +3,7 @@
 #include <QLabel>
 #include <QApplication>
 #include <QScreen>
+#include <QButtonGroup>
 
 
 cameraMenu::cameraMenu(camContainer* c, QWidget *parent) : QDialog(parent), cams(c) {
@@ -16,7 +17,7 @@ cameraMenu::cameraMenu(camContainer* c, QWidget *parent) : QDialog(parent), cams
     int width = qApp->primaryScreen()->size().width();
     int height = qApp->primaryScreen()->size().height();
 
-    resize(width / 3.5f, height / 3);
+    resize(width / 3.5f, height / 2.5f);
     this->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
 
     QHBoxLayout* mainLayout = new QHBoxLayout(this);
@@ -28,12 +29,27 @@ cameraMenu::cameraMenu(camContainer* c, QWidget *parent) : QDialog(parent), cams
 
     QPushButton* cam1 = new QPushButton(this);
     cam1->setText("камера 1");
+    cam1->setAutoDefault(false);
+    cam1->setCheckable(true);
     QPushButton* cam2 = new QPushButton(this);
     cam2->setText("камера 2");
+    cam2->setAutoDefault(false);
+    cam2->setCheckable(true);
     QPushButton* cam3 = new QPushButton(this);
     cam3->setText("камера 3");
+    cam3->setAutoDefault(false);
+    cam3->setCheckable(true);
     QPushButton* cam4 = new QPushButton(this);
     cam4->setText("камера 4");
+    cam4->setAutoDefault(false);
+    cam4->setCheckable(true);
+
+    QButtonGroup* camGroup = new QButtonGroup(this);
+    camGroup->setExclusive(true);      // <-- only one checked at a time
+    camGroup->addButton(cam1, 0);
+    camGroup->addButton(cam2, 1);
+    camGroup->addButton(cam3, 2);
+    camGroup->addButton(cam4, 3);
 
     camerasLayout->addWidget(cam1);
     camerasLayout->addWidget(cam2);
@@ -53,6 +69,10 @@ cameraMenu::cameraMenu(camContainer* c, QWidget *parent) : QDialog(parent), cams
 
 
     QVBoxLayout* VTextLayout = new QVBoxLayout();
+
+    QLabel* currentLink = new QLabel("Ссылка сейчас:", this); //port
+    currentLink->setAlignment(Qt::AlignRight);
+    VTextLayout->addWidget(currentLink);
 
     QLabel* rtsp = new QLabel("RTSP-поток:", this); //port
     rtsp->setAlignment(Qt::AlignRight);
@@ -82,7 +102,12 @@ cameraMenu::cameraMenu(camContainer* c, QWidget *parent) : QDialog(parent), cams
 
     QVBoxLayout* VFieldLayout = new QVBoxLayout();
 
+    CurrentLink = new QLineEdit(this);
+    CurrentLink->setReadOnly(true);
+    VFieldLayout->addWidget(CurrentLink);
+
     Port = new QLineEdit(this);
+    Port->setAcceptDrops(0);
     VFieldLayout->addWidget(Port);
 
 
@@ -115,9 +140,9 @@ cameraMenu::cameraMenu(camContainer* c, QWidget *parent) : QDialog(parent), cams
     QHBoxLayout* buttonLayout = new QHBoxLayout();
 
     QPushButton* saveButton = new QPushButton(this);
-    saveButton->setText("Сохранить и выйти");
+    saveButton->setText("Сохранить");
     QPushButton* closeButton = new QPushButton(this);
-    closeButton->setText("выйти без сохранения");
+    closeButton->setText("выйти");
     buttonLayout->addWidget(saveButton);
     buttonLayout->addWidget(closeButton);
 
@@ -131,16 +156,20 @@ cameraMenu::cameraMenu(camContainer* c, QWidget *parent) : QDialog(parent), cams
     optionsLayout->addLayout(buttonLayout);
 
     QPushButton* btn1 = new QPushButton(this);
-    btn1->setText("меню");
+    btn1->setText("----");
+    btn1->setAutoDefault(false);
     settingsLayout->addWidget(btn1);
     QPushButton* btn2 = new QPushButton(this);
-    btn2->setText("меню");
+    btn2->setText("----");
+    btn2->setAutoDefault(false);
     settingsLayout->addWidget(btn2);
     QPushButton* btn3 = new QPushButton(this);
-    btn3->setText("меню");
+    btn3->setText("----");
+    btn3->setAutoDefault(false);
     settingsLayout->addWidget(btn3);
     QPushButton* btn4 = new QPushButton(this);
-    btn4->setText("меню");
+    btn4->setText("----");
+    btn4->setAutoDefault(false);
     settingsLayout->addWidget(btn4);
 
     mainLayout->addLayout(settingsLayout, 1);
@@ -152,17 +181,13 @@ cameraMenu::cameraMenu(camContainer* c, QWidget *parent) : QDialog(parent), cams
 
 
 
-    connect(cam1, &QPushButton::clicked, this, [this](){
-        getURLforUI(0);
-    });
-    connect(cam2, &QPushButton::clicked, this, [this](){
-        getURLforUI(1);
-    });
-    connect(cam3, &QPushButton::clicked, this, [this](){
-        getURLforUI(2);
-    });
-    connect(cam4, &QPushButton::clicked, this, [this](){
-        getURLforUI(3);
+    connect(camGroup, &QButtonGroup::idClicked, this, [camGroup, this](int id) {
+        clearInputFields();
+
+        selectedIndex = id;
+        getURLforUI(id);
+
+        camGroup->button(id)->setChecked(true);
     });
 
 
@@ -170,13 +195,12 @@ cameraMenu::cameraMenu(camContainer* c, QWidget *parent) : QDialog(parent), cams
 
     connect(closeButton, &QPushButton::clicked, this, &QDialog::accept);
 
-    connect(saveButton, &QPushButton::clicked, this, &QDialog::accept);
     connect(saveButton, &QPushButton::clicked, this, [this]() {
         saveURL(selectedIndex);
     });
 
 
-
+    cam1->setChecked(true);
     getURLforUI(0);
 
 }
@@ -186,6 +210,14 @@ cameraMenu::~cameraMenu() {
 }
 
 
+void cameraMenu::clearInputFields(){
+
+    Login->setText("");
+    Password->setText("");
+    Ip->setText("");
+    Port->setText("");
+    Stream->setText("");
+}
 
 
 void cameraMenu::getURLforUI(int index){
@@ -195,6 +227,8 @@ void cameraMenu::getURLforUI(int index){
 
 
     QUrl camURL = selectedCam->getUrl();
+
+    CurrentLink->setText(camURL.toString());
 
     if(QString::number(camURL.port()) == "-1" || camURL.isEmpty()){
         Login->setText("");
@@ -216,14 +250,14 @@ void cameraMenu::getURLforUI(int index){
 
 void cameraMenu::saveURL(int index){
 
-    if(Port->text().isEmpty() || Login->text().isEmpty() || Password->text().isEmpty() || Ip->text().isEmpty() || Stream->text().isEmpty() || selectedIndex== -1){
+    if(selectedIndex== -1){
         return;
     }
 
-    QString newURL = QString("rtsp://" + Login->text() + ":" + Password->text() + "@" + Ip->text() + ":" + Port->text() + "/" + Stream->text());
+    QString newURL = QString(CustomLink->text());
 
 
-    // cams->at(selectedIndex)->setUrl(newURL);
-    // cams->schedule(cams->at(selectedIndex));
+    cams->at(selectedIndex)->setUrl(newURL);
+    CurrentLink->setText(newURL);
 
 }
